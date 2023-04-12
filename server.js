@@ -1,12 +1,12 @@
 const express = require("express")
-//const cors = require("cors")
+const cors = require("cors")
 require("dotenv").config()
 
 const app = express()
-const port = process.env.PORT_NUM | 3000
-// app.use(cors({
-//     origin: "*"
-// }))
+const port = process.env.PORT_NUM | 8000
+app.use(cors({
+    origin: "*"
+}))
 app.use(express.json())
 
 const accountAPI = require("./router/account")
