@@ -1,7 +1,7 @@
 const router = require("express").Router()
 const jwt = require("jsonwebtoken")
-//const mysql      = require('mysql')
 const db = require("../modules/mysql")
+const nowTime = require("../modules/kst")
 
 const jwtSecretKey = process.env.JWT_SECRET_KEY
 
@@ -109,6 +109,59 @@ router.post("/login",(req, res) => {
 })
 
 //회원가입 
+router.post("/",(req, res) => {
+
+    const joinTime = nowTime()//회원가입 시간 
+
+    // Request Data
+    const emailValue = req.body.email
+    const passwordValue = req.body.pw
+    const nameValue =  req.body.name
+    
+    // Response Data
+    const result = {
+        "success": false,
+        "message": null
+    }
+
+    try {
+        if (emailValue === null || emailValue === undefined || emailValue === "") {
+            throw new Error("이메일 값이 올바르지 않습니다.")
+        } else if(passwordValue === null || passwordValue === undefined || passwordValue === "") {
+            throw new Error("비밀번호 값이 올바르지 않습니다.")
+        } else if(nameValue === null || nameValue === undefined || nameValue === "") {
+            throw new Error("이름 값이 올바르지 않습니다.")
+        }else {
+            
+            db.getConnection(function(err, connection) {
+
+                const sql = `
+                    INSERT INTO account (user_name, email, pw, date)  VALUES (?,?,?,?)
+                `
+                const values = [nameValue, emailValue, passwordValue, joinTime]
+            
+                connection.query(sql, values, function (error, results) {
+                    if (error) {
+                        console.log("db qeryerr",error)
+                    }else{
+                        result.success = true
+                        result.message = "회원가입 성공"
+                        connection.release()
+                        res.send(result)
+                    }
+                        
+                    
+                })
+            })
+            
+
+        }
+    } catch(e) {
+        result.message = e.message
+        console.log("POST /account API ERR : ", e.message)
+    }
+
+})
 
 
 
