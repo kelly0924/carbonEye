@@ -9,7 +9,8 @@ const updateRefreshToken = async(accountIndexValue)=> {
 
     const result = {
         "success": false,
-        "refresh_token": null
+        "refresh_token": null,
+        "message": null
     }
 
     //refresh_token 발급
@@ -31,6 +32,7 @@ const updateRefreshToken = async(accountIndexValue)=> {
      
     result.success = true
     result.refresh_token = refreshJwtToken
+    result.message = "new refresh_token"
 
     await connection.release()
     return result

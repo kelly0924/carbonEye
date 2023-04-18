@@ -60,7 +60,7 @@ router.post("/login",async(req, res) => {
                     jwtSecretKey,
                     {
                         "issuer": "kelly",
-                        "expiresIn": "20s"
+                        "expiresIn": "2h"
                     }
                 )
 
@@ -72,7 +72,7 @@ router.post("/login",async(req, res) => {
                     jwtSecretKey,
                     {
                         "issuer": "kelly",
-                        "expiresIn": "14d"
+                        "expiresIn": "60s"
                     }
                 )
                 //refresh upload 
@@ -165,32 +165,34 @@ router.get("/",async(req,res)=>{
     try{
        
         if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
-    
+
+            const accountIndexValue = accessVerify(accessTokenValue).payload
+
             if(accessVerify(accessTokenValue).success === true){//treu일 경우-> access_token이 유효한 경우 
                 
-                const accountIndexValue = accessVerify(accessTokenValue).payload
-              
-                const connection = await db.getConnection()
-                const sql = `
-                    SELECT user_name,email,pw FROM account WHERE account_index = ?
-                `
-                const values = [accountIndexValue]
-                const [rows]  = await connection.query(sql, values)
+                if(refreshVerify(refreshTokenValue).message === "token expired"){
+                    const temp = await updateRefreshToken(accountIndexValue)
+                    console.log("여기동",temp)
+                    res.send(temp)
+                }else{
+                   
+                    const connection = await db.getConnection()
+                    const sql = `
+                        SELECT user_name,email,pw FROM account WHERE account_index = ?
+                    `
+                    const values = [accountIndexValue]
+                    const [rows]  = await connection.query(sql, values)
 
-                result.success = true
-                result.data = rows[0]
+                    result.success = true
+                    result.data = rows[0]
 
-                connection.release()
-                res.send(result)
+                    connection.release()
+                    res.send(result)
+                }
             
-            }else if(accessVerify(accessTokenValue).success === true && refreshVerify(refreshTokenValue).message === "token expired"){//access_token은 유효한데  refresh token이 종료 된경우
-                result.refresh_token = await updateRefreshToken(accessTokenValue).refresh_token
-                res.send(result)
-                
             }else if(accessVerify(accessTokenValue).message === "token expired"){//access_token이 완료된 경우 
                 //refresh_token이 유효한 경우 
                 if(refreshVerify(refreshTokenValue)){//true 인 경우 -> refresh_token이 유효한 경우 새로운 access_token생성
-
                     const accountIndexValue = refreshVerify(refreshTokenValue).payload
                     const temp = await newAccessToken(accountIndexValue, refreshTokenValue)
                     res.send(temp)
