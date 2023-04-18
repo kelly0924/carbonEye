@@ -5,7 +5,7 @@ const db = require("./mysql")
 
 
 const jwtSecretKey = process.env.JWT_SECRET_KEY
-const updateRefreshToken = (accountIndexValue)=> {
+const updateRefreshToken = async(accountIndexValue)=> {
 
     const result = {
         "success": false,
@@ -24,21 +24,16 @@ const updateRefreshToken = (accountIndexValue)=> {
         }
     )
     //refresh upload 
+    const connection = await db.getConnection()
     const refreshSql ='UPDATE account SET refresh_token = ? WHERE account_index =?'
     const tokenValues=[refreshJwtToken, accountIndexValue]
-    connection.query(refreshSql, tokenValues, function (error) {
-        if (error) {
-            console.log("token sql err",error)
-        }else{
-            result.success = true
-            result.refresh_token = refreshJwtToken
-        }
+    await connection.query(refreshSql, tokenValues)
+     
+    result.success = true
+    result.refresh_token = refreshJwtToken
 
-        connection.release()
-        return result
-
-    })
-
+    await connection.release()
+    return result
 
 }
 

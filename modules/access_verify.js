@@ -6,7 +6,6 @@ const jwtSecretKey = process.env.JWT_SECRET_KEY
 
 const  toeknVerify = (access_token) => {
 
-    console.log(access_token,"여기??")
     let result = {
         "success": false,//true 이면 데이터 보내기  fales이면 access token 완료 
         "payload": null,
@@ -17,7 +16,6 @@ const  toeknVerify = (access_token) => {
         const decoded = jwt.verify(access_token, jwtSecretKey)
         result.payload= decoded.account_index
         result.success = true
-        console.log(result,"??")
     } 
     catch(err) {
         if (err.message === "jwt expired") {//access token이 완료된 상황 -> 완료 됬다고 알려줘야 함

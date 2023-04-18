@@ -7,7 +7,7 @@ const refreshVerify = require("./refresh_verify")
 const jwtSecretKey = process.env.JWT_SECRET_KEY
 
 //new access_token 생성 
-const  newAccessToken = (accountIndexValue, refreshTokenValue)=>{
+const  newAccessToken = async(accountIndexValue, refreshTokenValue)=>{
 
     const result = {
         "success": false,
@@ -16,60 +16,43 @@ const  newAccessToken = (accountIndexValue, refreshTokenValue)=>{
     }
 
    try{ 
-        db.getConnection(function(err, connection) {
-
-            const sql = `
-                SELECT refresh_token, email FROM account WHERE account_index = ?
-            `
-            const values = [accountIndexValue]
-        
-            connection.query(sql, values, function (error, results) {
-                if (error) {
-                    console.log("db qeryerr",error)
-                }else{
-                    if(results[0].refresh_token === refreshTokenValue){//db에서의 토큰과 같은 경우 
+        const connection = await db.getConnection()
+        const sql = `
+            SELECT refresh_token, email FROM account WHERE account_index = ?
+        `
+        const values = [accountIndexValue]
+        const [rows] = await connection.query(sql, values)
             
-                        // new access_token 발급
-                        const newAccessJwtToken=jwt.sign(
-                            {
-                                "account_index": accountIndexValue,
-                                "email": results[0].email,
-                                "role": "client"
-                            },
-                            jwtSecretKey,
-                            {
-                                "issuer": "kelly",
-                                "expiresIn": "1h"
-                            }
-                        )
-                        result.success = true
-                        result.access_token = newAccessJwtToken
-                        console.log(result,"함수안에서 result")
-                       
-                       
-                    }
+        if(rows[0].refresh_token === refreshTokenValue){//db에서의 토큰과 같은 경우 
 
-                    connection.release()
-                    //return result 왜 기다려 안줘 와이
-                    
+            // new access_token 발급
+            const newAccessJwtToken=jwt.sign(
+                {
+                    "account_index": accountIndexValue,
+                    "email": rows[0].email,
+                    "role": "client"
+                },
+                jwtSecretKey,
+                {
+                    "issuer": "kelly",
+                    "expiresIn": "1h"
                 }
-             
-                
-            })
-
-          
-            
-        })
+            )
+            result.success = true
+            result.access_token = newAccessJwtToken
+            result.message = "new access_token"
+        }
+        await connection.release()
+        return result
 
        
                     
-
     }catch(e) {
         result.message = e.message
         console.log("new_accesstoken module ERR : ", e.message)
     }
     
-
+   
 }
 
 module.exports = newAccessToken
