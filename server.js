@@ -10,16 +10,19 @@ app.use(cors({
 app.use(express.json())
 
 const accountAPI = require("./router/account")
-app.use("/account",accountAPI)
+app.use("/account", accountAPI)
 
 const mainPageAPI = require("./router/main")
-app.use("/main",mainPageAPI)
+app.use("/main", mainPageAPI)
 
 const foodAPI = require("./router/food")
-app.use("/food",foodAPI)
+app.use("/food", foodAPI)
 
 const trafficAPI = require("./router/traffic")
-app.use("/traffic",trafficAPI)
+app.use("/traffic", trafficAPI)
+
+const user_authAPI = require("./router/user_auth")
+app.use("/user_auth", user_authAPI)
 
 app.listen(port, () => {
     console.log(`Server is Start at : ${port}`)
