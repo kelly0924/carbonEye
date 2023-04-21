@@ -71,7 +71,7 @@ router.get("/",async(req,res)=>{
                 throw new Error("올바르지 않은 토큰입니다.")
             }
         }else{
-            throw new Error("올바르지 않은 토큰입니다.")
+            throw new Error("토큰이 올바르지 않습니다.")
         }
     }catch(e){
         result.message = e.message
