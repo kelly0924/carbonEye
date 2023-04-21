@@ -15,6 +15,9 @@ app.use("/account",accountAPI)
 const mainPageAPI = require("./router/main")
 app.use("/main",mainPageAPI)
 
+const foodAPI = require("./router/food")
+app.use("/food",foodAPI)
+
 app.listen(port, () => {
     console.log(`Server is Start at : ${port}`)
 })

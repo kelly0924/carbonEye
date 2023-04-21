@@ -1,7 +1,6 @@
 const router = require("express").Router()
 const jwt = require("jsonwebtoken")
 const db = require("../modules/mysql")
-const mysql = require('mysql2/promise');
 
 const nowTime = require("../modules/kst")
 const dateAgo = require("../modules/date")
