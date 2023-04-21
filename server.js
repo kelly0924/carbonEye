@@ -12,6 +12,8 @@ app.use(express.json())
 const accountAPI = require("./router/account")
 app.use("/account",accountAPI)
 
+const mainPageAPI = require("./router/main")
+app.use("/main",mainPageAPI)
 
 app.listen(port, () => {
     console.log(`Server is Start at : ${port}`)
