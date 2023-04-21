@@ -4,6 +4,7 @@ const db = require("../modules/mysql")
 const mysql = require('mysql2/promise');
 
 const nowTime = require("../modules/kst")
+const dateAgo = require("../modules/date")
 const accessVerify = require("../modules/access_verify")
 const refreshVerify = require("../modules/refresh_verify")
 const newAccessToken = require("../modules/new_access_token")
@@ -72,7 +73,7 @@ router.post("/login",async(req, res) => {
                     jwtSecretKey,
                     {
                         "issuer": "kelly",
-                        "expiresIn": "60s"
+                        "expiresIn": "14d"
                     }
                 )
                 //refresh upload 
@@ -321,14 +322,42 @@ router.get("/avg",async(req,res)=>{
                    
                     const connection = await db.getConnection()
                     const sql = `
-                     SELECT food_carbon, traffic_carbon, date FROM carbon  WHERE date BETWEEN DATE_SUB(NOW(), INTERVAL 5 DAY) AND NOW() AND account_index = ?
+                     SELECT  DATE_FORMAT(date, '%Y-%m-%d') AS date, food_carbon, traffic_carbon FROM carbon  WHERE date BETWEEN DATE_SUB(NOW(), INTERVAL 5 DAY) AND NOW() AND account_index = ?
                     `
                     const values = [accountIndexValue]
                     const [rows]  = await connection.query(sql, values)
-                    
+                
+                    let tempCarbon={
+                        "one_day_ago": 0,
+                        "two_day_ago": 0,
+                        "tree_day_ago": 0,
+                        "four_day_ago": 0,
+                        "five_day_ago": 0,
+                        "avg": 0
+                    }
 
+                    for(let index = 0; index < rows.length; index++){
+
+                        let diffDay = dateAgo(rows[index].date)
+
+                        if(diffDay === 1){
+                            tempCarbon.one_day_ago = rows[index].food_carbon + rows[index].traffic_carbon
+                        }else if(diffDay === 2){
+                            tempCarbon.two_day_ago = rows[index].food_carbon + rows[index].traffic_carbon
+                        }else if(diffDay === 3){
+                            tempCarbon.tree_day_ago = rows[index].food_carbon + rows[index].traffic_carbon
+                        }else if(diffDay === 4){
+                            tempCarbon.four_day_ago= rows[index].food_carbon + rows[index].traffic_carbon
+                        }else if(diffDay === 5){
+                            tempCarbon.five_day_ago = rows[index].food_carbon + rows[index].traffic_carbon
+                        }else{
+                            console.log(diffDay)
+                        }
+
+                    }
+                    tempCarbon.avg = Math.floor(tempCarbon.one_day_ago + tempCarbon.tree_day_ago + tempCarbon.tree_day_ago + tempCarbon.four_day_ago + tempCarbon.five_day_ago) / 5
                     result.success = true
-                    result.data = rows[0]
+                    result.data = tempCarbon
                     //로우로 정재 해서 보내기 
 
 
