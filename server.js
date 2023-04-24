@@ -24,6 +24,9 @@ app.use("/traffic", trafficAPI)
 const user_authAPI = require("./router/user_auth")
 app.use("/user_auth", user_authAPI)
 
+const groupAPI = require("./router/group")
+app.use("/group",groupAPI)
+
 app.listen(port, () => {
     console.log(`Server is Start at : ${port}`)
 })
