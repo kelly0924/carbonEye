@@ -180,13 +180,13 @@ router.get("/", async(req, res) => {
 })
 
 
-//group 참여하기 
-router.post("/join", async(req, res) => {
+//group 참여하기-> 초대 코드 보내기
+router.get("/join", async(req, res) => {
 
    
     // Request Data
-    const groupNameValue = req.body.group_name
-    const groudIndexValue = req.body.group_index
+    const groupNameValue = req.query.group_name
+    const groudIndexValue = req.query.group_index
     
     const refreshTokenValue = req.headers.refresh_token
     const accessTokenValue = req.headers.access_token
@@ -218,12 +218,6 @@ router.post("/join", async(req, res) => {
                     }else{
                     
                         const connection = await db.getConnection()
-                        const sql = `
-                            INSERT INTO \`${groupNameValue}\` (group_index, account_index)  VALUES(?, ?)
-                        `
-                        const values =[groudIndexValue, accountIndexValue]
-                        await connection.query(sql, values)
-
                         //invite code 가져오기 
                         const selceSql = `
                              SELECT invite_code FROM carbon_group WHERE group_index = ?
@@ -234,6 +228,92 @@ router.post("/join", async(req, res) => {
                        result.success = true
                        result.invite_code = rows[0].invite_code
                        result.message="성공"
+
+                        connection.release()
+                        res.send(result)
+                    }
+                
+                }else if(accessVerify(accessTokenValue).message === "token expired"){//access_token이 완료된 경우 
+                    //refresh_token이 유효한 경우 
+                    if(refreshVerify(refreshTokenValue)){//true 인 경우 -> refresh_token이 유효한 경우 새로운 access_token생성
+                        const accountIndexValue = refreshVerify(refreshTokenValue).payload
+                        const temp = await newAccessToken(accountIndexValue, refreshTokenValue)
+                        res.send(temp)
+
+                    }else{
+                        throw new Error("모든 토큰이 완료 되었습니다.")
+                    }
+
+                }else{
+                    throw new Error("토큰이 올바르지 않습니다.")
+                }
+            }else{
+                throw new Error("토큰이 올바르지 않습니다.")
+            }
+        }
+    }catch(e){
+        result.message = e.message
+        console.log("GET /group/join API ERR : ", e.message)
+    }
+
+})
+
+// 초대코드 확인 후 참여 확인 
+router.post("/join", async(req, res) => {
+
+   
+    // Request Data
+    const inviteCodeValue = req.body.invite_code    
+    const groudIndexValue = req.body.group_index
+    const groupNameValue = req.body.group_name
+    const refreshTokenValue = req.headers.refresh_token
+    const accessTokenValue = req.headers.access_token
+    
+    // Response Data
+    const result = {
+        "success": false,
+        "message": null
+    }
+
+    try{
+        if(inviteCodeValue === undefined || inviteCodeValue === null || inviteCodeValue === ""){
+            throw new Error("초대코드 값이 올바르지 않습니다.")
+        }else if(groudIndexValue === undefined || groudIndexValue === null || groudIndexValue === ""){
+            throw new Error("그룹 index 값이 올바르지 않습니다.")
+        }else if(groupNameValue === undefined || groupNameValue === null || groupNameValue === ""){
+            throw new Error("그룹 이름 값이 올바르지 않습니다.")
+        } else{
+       
+            if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
+
+                const accountIndexValue = accessVerify(accessTokenValue).payload
+
+                if(accessVerify(accessTokenValue).success === true){//treu일 경우-> access_token이 유효한 경우 
+                    
+                    if(refreshVerify(refreshTokenValue).message === "token expired"){
+                        const temp = await updateRefreshToken(accountIndexValue)
+                        res.send(temp)
+                    }else{
+                    
+                        const connection = await db.getConnection()
+                         //invite code 가져오기 
+                        const selceSql = `
+                            SELECT invite_code FROM carbon_group WHERE group_index = ?
+                        `
+                        const selectValues = [groudIndexValue]
+                        const [rows] =await connection.query(selceSql, selectValues)
+                        const tempInviteCode = rows[0].invite_code
+
+                        if(tempInviteCode === inviteCodeValue){
+                            const sql = `
+                                INSERT INTO \`${groupNameValue}\` (group_index, account_index)  VALUES(?, ?)
+                            `
+                            const values =[groudIndexValue, accountIndexValue]
+                            await connection.query(sql, values)
+                            result.success = true
+                            result.message="가입 성공."
+
+                        }
 
                         connection.release()
                         res.send(result)
