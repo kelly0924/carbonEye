@@ -67,7 +67,9 @@ router.post("/", async(req, res) => {
                             CREATE TABLE \`${groupNameValue}\` (
                                 groud_join_index INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
                                 group_index INT REFERENCES carbon_group(group_index),
-                                account_index INT REFERENCES account(account_index)
+                                account_index INT REFERENCES account(account_index),
+                                total_carbon INT DEFAULT 0,
+                                date TIMESTAMP DEFAULT NULL
                             );
                             
                         `
@@ -213,7 +215,6 @@ router.get("/join", async(req, res) => {
                     
                     if(refreshVerify(refreshTokenValue).message === "token expired"){
                         const temp = await updateRefreshToken(accountIndexValue)
-                        console.log("여기동",temp)
                         res.send(temp)
                     }else{
                     
@@ -344,6 +345,151 @@ router.post("/join", async(req, res) => {
 
 })
 
+//그룹 참여 후 자신의 탄소량을 update 하는 api
+router.put("/carbon", async(req, res) => {
 
+   
+    // Request Data 
+    const groudIndexValue = req.body.group_index
+    const groupNameValue = req.body.group_name
+    const myCarbonValue= req.body.my_carbon
+
+    const refreshTokenValue = req.headers.refresh_token
+    const accessTokenValue = req.headers.access_token
+    
+    // Response Data
+    const result = {
+        "success": false,
+        "message": null
+    }
+
+    try{
+        if(myCarbonValue === undefined || myCarbonValue === null || myCarbonValue === ""){
+            throw new Error("초대코드 값이 올바르지 않습니다.")
+        }else if(groudIndexValue === undefined || groudIndexValue === null || groudIndexValue === ""){
+            throw new Error("그룹 index 값이 올바르지 않습니다.")
+        }else if(groupNameValue === undefined || groupNameValue === null || groupNameValue === ""){
+            throw new Error("그룹 이름 값이 올바르지 않습니다.")
+        } else{
+       
+            if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
+
+                const accountIndexValue = accessVerify(accessTokenValue).payload
+
+                if(accessVerify(accessTokenValue).success === true){//treu일 경우-> access_token이 유효한 경우 
+                    
+                    if(refreshVerify(refreshTokenValue).message === "token expired"){
+                        const temp = await updateRefreshToken(accountIndexValue)
+                        res.send(temp)
+                    }else{
+                    
+                        const connection = await db.getConnection()
+                         //invite code 가져오기 
+                        const sql = `
+                            UPDATE  \`${groupNameValue}\` SET total_carbon = total_carbon + ?, date =? WHERE account_index = ?
+                        `
+                        const values = [myCarbonValue, nowTime(), accountIndexValue]
+                        await connection.query(sql, values)
+                        
+                        connection.release()
+                        res.send(result)
+                    }
+                
+                }else if(accessVerify(accessTokenValue).message === "token expired"){//access_token이 완료된 경우 
+                    //refresh_token이 유효한 경우 
+                    if(refreshVerify(refreshTokenValue)){//true 인 경우 -> refresh_token이 유효한 경우 새로운 access_token생성
+                        const accountIndexValue = refreshVerify(refreshTokenValue).payload
+                        const temp = await newAccessToken(accountIndexValue, refreshTokenValue)
+                        res.send(temp)
+
+                    }else{
+                        throw new Error("모든 토큰이 완료 되었습니다.")
+                    }
+
+                }else{
+                    throw new Error("토큰이 올바르지 않습니다.")
+                }
+            }else{
+                throw new Error("토큰이 올바르지 않습니다.")
+            }
+        }
+    }catch(e){
+        result.message = e.message
+        console.log("POST /group/join API ERR : ", e.message)
+    }
+
+})
+
+// 그룹 랭킹 가져오기 
+router.get("/ranking", async(req, res) => {
+
+    // Request Data
+    const groupNameValue = req.query.group_name
+    
+    const refreshTokenValue = req.headers.refresh_token
+    const accessTokenValue = req.headers.access_token
+    
+    // Response Data
+    const result = {
+        "success": false,
+        "data":null,
+        "message": null
+    }
+
+    try{
+        if(groupNameValue === undefined || groupNameValue === null || groupNameValue === ""){
+            throw new Error("그룹 이름 값이 올바르지 않습니다.")
+        }else{
+       
+            if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
+
+                const accountIndexValue = accessVerify(accessTokenValue).payload
+
+                if(accessVerify(accessTokenValue).success === true){//treu일 경우-> access_token이 유효한 경우 
+                    
+                    if(refreshVerify(refreshTokenValue).message === "token expired"){
+                        const temp = await updateRefreshToken(accountIndexValue)
+                        res.send(temp)
+                    }else{
+                    
+                        const connection = await db.getConnection()
+                        
+                            const Sql = `
+                                SELECT user_name, total_carbon FROM \`${groupNameValue}\` JOIN account 
+                                ON \`${groupNameValue}\`.account_index = account.account_index ORDER BY total_carbon DESC
+                            `
+                            const [rows ] =await connection.query(sql)
+
+                            result.success = true
+                        
+                            result.message="성공"
+                            result.data = rows
+                            connection.release()
+                            res.send(result)
+                        }
+                    }
+                
+                }else if(accessVerify(accessTokenValue).message === "token expired"){//access_token이 완료된 경우 
+                    //refresh_token이 유효한 경우 
+                    if(refreshVerify(refreshTokenValue)){//true 인 경우 -> refresh_token이 유효한 경우 새로운 access_token생성
+                        const accountIndexValue = refreshVerify(refreshTokenValue).payload
+                        const temp = await newAccessToken(accountIndexValue, refreshTokenValue)
+                        res.send(temp)
+
+                    }else{
+                        throw new Error("모든 토큰이 완료 되었습니다.")
+                    }
+
+                }else{
+                    throw new Error("토큰이 올바르지 않습니다.")
+                }
+            }
+        
+    }catch(e){
+        result.message = e.message
+        console.log("GET /group/ranking API ERR : ", e.message)
+    }   
+
+})
 
 module.exports = router
