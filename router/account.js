@@ -25,8 +25,7 @@ router.post("/login",async(req, res) => {
         "success": false,
         "message": null,
         "access_token": null,
-        "refresh_token": null,
-        "data": null
+        "refresh_token": null
     }
 
     try {
@@ -83,7 +82,8 @@ router.post("/login",async(req, res) => {
                 result.success = true
                 result.refresh_token = refreshJwtToken
                 result.access_token = accessJwtToken
-                result.data = rows[0]
+                result.message = "로그인 성공"
+               
         
                 await connection.release()     
             }
@@ -131,6 +131,12 @@ router.post("/",async(req, res) => {
             const values = [nameValue, emailValue, passwordValue, joinTime]
             await connection.query(sql, values,)
 
+            //carbon db에 삽입
+            const carbonSql = `
+                INSERT INTO carbon(account_index, date) VALUES((SELECT MAX(account_index) from account), ?)
+            `
+            const carbonValues=[nowTime()]
+            
             result.success = true
             result.message = "회원가입 성공"
             
@@ -157,8 +163,6 @@ router.get("/",async(req,res)=>{
     const result = {
         "success": false,
         "message": null,
-        "access_token": null,
-        "refresh_token": null,
         "data": null
     }
     
@@ -178,7 +182,7 @@ router.get("/",async(req,res)=>{
                    
                     const connection = await db.getConnection()
                     const sql = `
-                        SELECT user_name,email,pw FROM account WHERE account_index = ?
+                        SELECT user_name,email FROM account WHERE account_index = ?
                     `
                     const values = [accountIndexValue]
                     const [rows]  = await connection.query(sql, values)
@@ -227,9 +231,7 @@ router.put("/",async(req,res)=>{
     
     const result = {
         "success": false,
-        "message": null,
-        "access_token": null,
-        "refresh_token": null
+        "message": null
     }
     
     try{
@@ -247,7 +249,6 @@ router.put("/",async(req,res)=>{
                     
                     if(refreshVerify(refreshTokenValue).message === "token expired"){
                         const temp = await updateRefreshToken(accountIndexValue)
-                        console.log("여기동",temp)
                         res.send(temp)
                     }else{
                     
@@ -300,8 +301,6 @@ router.get("/avg",async(req,res)=>{
     const result = {
         "success": false,
         "message": null,
-        "access_token": null,
-        "refresh_token": null,
         "data": null
     }
     

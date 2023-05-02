@@ -23,9 +23,8 @@ router.get("/",async(req,res)=>{
     const result = {
         "success": false,
         "message": null,
-        "access_token": null,
-        "refresh_token": null,
-        "data": null
+        "total_carbon": null,
+        "name": null
     }
     
     try{
@@ -38,10 +37,9 @@ router.get("/",async(req,res)=>{
                 
                 if(refreshVerify(refreshTokenValue).message === "token expired"){
                     const temp = await updateRefreshToken(accountIndexValue)
-                    console.log("여기동",temp)
                     res.send(temp)
                 }else{
-                   
+                    console.log(accountIndexValue,"account 값")
                     const connection = await db.getConnection()
                     const sql = `
                         SELECT food_carbon, traffic_carbon FROM carbon WHERE account_index = ?
@@ -49,8 +47,13 @@ router.get("/",async(req,res)=>{
                     const values = [accountIndexValue]
                     const [rows]  = await connection.query(sql, values)
 
+                    const nameSql = `SELECT user_name FROM account WHERE account_index = ?`
+                    const nameValue = [accountIndexValue]
+                    const [userNames] = await  connection.query(nameSql, nameValue)
+
                     result.success = true
-                    result.data = rows[0].food_carbon + rows[0].traffic_carbon
+                    result.total_carbon = rows[0].food_carbon + rows[0].traffic_carbon
+                    result.name= userNames[0].user_name
 
                     connection.release()
                     res.send(result)
@@ -75,7 +78,7 @@ router.get("/",async(req,res)=>{
         }
     }catch(e){
         result.message = e.message
-        console.log("GET /account API ERR : ", e.message)
+        console.log("GET /main API ERR : ", e.message)
     }
 
     

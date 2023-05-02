@@ -34,7 +34,8 @@ router.post("/", async(req, res) => {
     // Response Data
     const result = {
         "success": false,
-        "message": null
+        "message": null,
+        "group_index": null
     }
 
     try{
@@ -82,7 +83,12 @@ router.post("/", async(req, res) => {
                        const values =[groupNameValue, accountIndexValue, startTimeValue, endTimeValue, inviteCode, is_foodValue, is_trafficValue]
                        await connection.query(insertSql, values)
 
+                       //group_index 가져 오기 
+                       const getIndexSql = `SELECT MAX(group_index) AS group_inex  FROM carbon_group`
+                       const [groups] = await connection.query(getIndexSql)
+
                        result.success = true
+                       result.group_index = groups[0].group_inex
                        result.message="group 생성."
 
                         connection.release()
@@ -267,6 +273,7 @@ router.post("/join", async(req, res) => {
     const inviteCodeValue = req.body.invite_code    
     const groudIndexValue = req.body.group_index
     const groupNameValue = req.body.group_name
+    const kindOfValue = req.body.kind_of
     const refreshTokenValue = req.headers.refresh_token
     const accessTokenValue = req.headers.access_token
     
@@ -283,6 +290,8 @@ router.post("/join", async(req, res) => {
             throw new Error("그룹 index 값이 올바르지 않습니다.")
         }else if(groupNameValue === undefined || groupNameValue === null || groupNameValue === ""){
             throw new Error("그룹 이름 값이 올바르지 않습니다.")
+        }else if(kindOfValue === undefined || kindOfValue === null || kindOfValue === ""){
+            throw new Error("음식, 교통을 분리하는 값이 올바르지 않습니다.")
         } else{
        
             if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
@@ -305,9 +314,9 @@ router.post("/join", async(req, res) => {
                         const [rows] =await connection.query(selceSql, selectValues)
                         const tempInviteCode = rows[0].invite_code
 
-                        if(tempInviteCode === inviteCodeValue){
+                        if(tempInviteCode === inviteCodeValue && kindOfValue === "food"){
                             const sql = `
-                                INSERT INTO \`${groupNameValue}\` (group_index, account_index)  VALUES(?, ?)
+                                INSERT INTO \`${groupNameValue}\` (group_index, account_index) VALUES(?, ?)
                             `
                             const values =[groudIndexValue, accountIndexValue]
                             await connection.query(sql, values)
@@ -315,82 +324,8 @@ router.post("/join", async(req, res) => {
                             result.message="가입 성공."
 
                         }
-
-                        connection.release()
-                        res.send(result)
-                    }
-                
-                }else if(accessVerify(accessTokenValue).message === "token expired"){//access_token이 완료된 경우 
-                    //refresh_token이 유효한 경우 
-                    if(refreshVerify(refreshTokenValue)){//true 인 경우 -> refresh_token이 유효한 경우 새로운 access_token생성
-                        const accountIndexValue = refreshVerify(refreshTokenValue).payload
-                        const temp = await newAccessToken(accountIndexValue, refreshTokenValue)
-                        res.send(temp)
-
-                    }else{
-                        throw new Error("모든 토큰이 완료 되었습니다.")
-                    }
-
-                }else{
-                    throw new Error("토큰이 올바르지 않습니다.")
-                }
-            }else{
-                throw new Error("토큰이 올바르지 않습니다.")
-            }
-        }
-    }catch(e){
-        result.message = e.message
-        console.log("POST /group/join API ERR : ", e.message)
-    }
-
-})
-
-//그룹 참여 후 자신의 탄소량을 update 하는 api
-router.put("/carbon", async(req, res) => {
-
-   
-    // Request Data 
-    const groudIndexValue = req.body.group_index
-    const groupNameValue = req.body.group_name
-    const myCarbonValue= req.body.my_carbon
-
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
-    
-    // Response Data
-    const result = {
-        "success": false,
-        "message": null
-    }
-
-    try{
-        if(myCarbonValue === undefined || myCarbonValue === null || myCarbonValue === ""){
-            throw new Error("초대코드 값이 올바르지 않습니다.")
-        }else if(groudIndexValue === undefined || groudIndexValue === null || groudIndexValue === ""){
-            throw new Error("그룹 index 값이 올바르지 않습니다.")
-        }else if(groupNameValue === undefined || groupNameValue === null || groupNameValue === ""){
-            throw new Error("그룹 이름 값이 올바르지 않습니다.")
-        } else{
-       
-            if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
-
-                const accountIndexValue = accessVerify(accessTokenValue).payload
-
-                if(accessVerify(accessTokenValue).success === true){//treu일 경우-> access_token이 유효한 경우 
-                    
-                    if(refreshVerify(refreshTokenValue).message === "token expired"){
-                        const temp = await updateRefreshToken(accountIndexValue)
-                        res.send(temp)
-                    }else{
-                    
-                        const connection = await db.getConnection()
-                         //invite code 가져오기 
-                        const sql = `
-                            UPDATE  \`${groupNameValue}\` SET total_carbon = total_carbon + ?, date =? WHERE account_index = ?
-                        `
-                        const values = [myCarbonValue, nowTime(), accountIndexValue]
-                        await connection.query(sql, values)
                         
+
                         connection.release()
                         res.send(result)
                     }
@@ -425,7 +360,6 @@ router.get("/ranking", async(req, res) => {
 
     // Request Data
     const groupNameValue = req.query.group_name
-    
     const refreshTokenValue = req.headers.refresh_token
     const accessTokenValue = req.headers.access_token
     
@@ -453,20 +387,20 @@ router.get("/ranking", async(req, res) => {
                     }else{
                     
                         const connection = await db.getConnection()
-                        
-                            const Sql = `
-                                SELECT user_name, total_carbon FROM \`${groupNameValue}\` JOIN account 
-                                ON \`${groupNameValue}\`.account_index = account.account_index ORDER BY total_carbon DESC
-                            `
-                            const [rows ] =await connection.query(sql)
+                       
+                        const sql = `
+                            SELECT user_name, total_carbon FROM \`${groupNameValue}\` JOIN account 
+                            ON \`${groupNameValue}\`.account_index = account.account_index ORDER BY total_carbon ASC
+                        `
+                        const [rows ] =await connection.query(sql)
 
-                            result.success = true
+                        result.success = true
+                    
+                        result.message="성공"
+                        result.data = rows
+                        connection.release()
+                        res.send(result)
                         
-                            result.message="성공"
-                            result.data = rows
-                            connection.release()
-                            res.send(result)
-                        }
                     }
                 
                 }else if(accessVerify(accessTokenValue).message === "token expired"){//access_token이 완료된 경우 
@@ -484,6 +418,7 @@ router.get("/ranking", async(req, res) => {
                     throw new Error("토큰이 올바르지 않습니다.")
                 }
             }
+        }
         
     }catch(e){
         result.message = e.message

@@ -94,8 +94,6 @@ router.get("/",async(req,res)=>{
     const result = {
         "success": false,
         "message": null,
-        "access_token": null,
-        "refresh_token": null,
         "data": 0
     }
     
