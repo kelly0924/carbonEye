@@ -27,6 +27,9 @@ app.use("/user_auth", user_authAPI)
 const groupAPI = require("./router/group")
 app.use("/group",groupAPI)
 
+const mailAPI = require("./router/mail")
+app.use("/mail",mailAPI)
+
 app.listen(port, () => {
     console.log(`Server is Start at : ${port}`)
 })

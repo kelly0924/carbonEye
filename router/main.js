@@ -15,8 +15,10 @@ const jwtSecretKey = process.env.JWT_SECRET_KEY
 // main page 사용자 탄소배출량 가져오기
 router.get("/",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
+
+    console.log(accessTokenValue ,"메인의 토큰")
     
     //Respons Data
     

@@ -18,8 +18,9 @@ router.post("/",async(req, res) => {
     // Request Data
     const temp =  req.body.carbon
     const carbonValue = parseInt(temp)
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
     // Response Data
     const result = {
@@ -87,15 +88,15 @@ router.post("/",async(req, res) => {
 
 router.get("/solution",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
 
     //Respons Data
     
     const result = {
         "success": false,
         "message": null,
-        "data": 0
+        "data": null
     }
     
     try{
@@ -153,8 +154,8 @@ router.get("/solution",async(req,res)=>{
 // traffic carbon 가져오기
 router.get("/carbon",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
 
     //Respons Data
     
