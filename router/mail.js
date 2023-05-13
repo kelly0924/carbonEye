@@ -65,7 +65,7 @@ router.post("/", async(req,res) => {
             result.success = true
             result.code = random_code 
 
-            await db.end()
+            await connection.release()
             res.send(result)
         }
        

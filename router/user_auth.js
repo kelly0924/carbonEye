@@ -19,8 +19,8 @@ router.post("/",upload.single('img'), async(req, res) => {
     const imgValue =  req.file ? req.file.path : ""
     console.log(imgValue,"img path")
 
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
     // Response Data
     const result = {
@@ -86,8 +86,8 @@ router.post("/",upload.single('img'), async(req, res) => {
 // 사용자 이미지 업로드 가져오기 
 router.get("/",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
 
     //Respons Data
     

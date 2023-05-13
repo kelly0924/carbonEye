@@ -28,8 +28,8 @@ router.post("/", async(req, res) => {
     const is_foodValue = req.body.is_food
     const is_trafficValue = req.body.is_traffic
     
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
     // Response Data
     const result = {
@@ -125,8 +125,8 @@ router.post("/", async(req, res) => {
 router.get("/", async(req, res) => {
 
 
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
     // Response Data
     const result = {
@@ -196,8 +196,8 @@ router.get("/join", async(req, res) => {
     const groupNameValue = req.query.group_name
     const groudIndexValue = req.query.group_index
     
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
     // Response Data
     const result = {
@@ -274,8 +274,8 @@ router.post("/join", async(req, res) => {
     const groudIndexValue = req.body.group_index
     const groupNameValue = req.body.group_name
     const kindOfValue = req.body.kind_of
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
     // Response Data
     const result = {

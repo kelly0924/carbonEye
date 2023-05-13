@@ -18,6 +18,7 @@ router.post("/login",async(req, res) => {
     const emailValue = req.body.email
     const passwordValue = req.body.pw
 
+    console.log(emailValue, passwordValue, req.body)
     
     console.log(emailValue,passwordValue)
     // Response Data
@@ -42,7 +43,7 @@ router.post("/login",async(req, res) => {
             const values = [emailValue, passwordValue]
             const [rows] = await connection.query(sql, values)
             
-            console.log("db 여기 나오낭?",rows)
+            console.log("로그인 api ",rows, rows.account_index )
             const temp =rows[0].account_index
             console.log(temp);
             if (temp.length == 0) {
@@ -136,6 +137,7 @@ router.post("/",async(req, res) => {
                 INSERT INTO carbon(account_index, date) VALUES((SELECT MAX(account_index) from account), ?)
             `
             const carbonValues=[nowTime()]
+            await connection.query(carbonSql, carbonValues)
             
             result.success = true
             result.message = "회원가입 성공"
@@ -155,9 +157,10 @@ router.post("/",async(req, res) => {
 
 router.get("/",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
+
     //Respons Data
     
     const result = {
@@ -222,8 +225,8 @@ router.get("/",async(req,res)=>{
 
 router.put("/",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     const emailValue = req.body.email
     const nameValue = req.body.name 
     
@@ -293,9 +296,8 @@ router.put("/",async(req,res)=>{
 
 router.get("/avg",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
-    
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     //Respons Data
     
     const result = {
