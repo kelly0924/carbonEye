@@ -224,12 +224,15 @@ router.get("/",async(req,res)=>{
 // my_page 수정
 
 router.put("/",async(req,res)=>{
+
+ 
     // Request Data
     const refreshTokenValue = req.headers.authorization
     const accessTokenValue = req.headers.authorization
     const emailValue = req.body.email
     const nameValue = req.body.name 
     
+    console.log("account_put api 호출?", emailValue, nameValue)
     //Respons Data
     
     const result = {
@@ -257,11 +260,12 @@ router.put("/",async(req,res)=>{
                     
                         const connection = await db.getConnection()
                         const sql = `
-                            UPDATE account SET user_name = ?,emailFROM =? account WHERE account_index = ?
+                            UPDATE account SET user_name = ?, email = ? WHERE account_index = ?
                         `
                         const values = [nameValue, emailValue, accountIndexValue]
                         await connection.query(sql, values)
                         result.success = true
+                        result.message= "수정 완료."
 
                         connection.release()
                         res.send(result)
