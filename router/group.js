@@ -65,8 +65,8 @@ router.post("/", async(req, res) => {
                             CREATE TABLE \`${groupNameValue}\` (
                                 groud_join_index INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
                                 group_index INT REFERENCES carbon_group(group_index),
-                                account_index INT REFERENCES account(account_index),
-                                total_carbon INT DEFAULT 0
+                                account_index INT REFERENCES account(account_index)
+                                
                             );
                             
                         `
@@ -113,7 +113,7 @@ router.post("/", async(req, res) => {
 })
 
 
-// 초대코드 확인 후 참여 확인 
+// 초대코드 확인 후 참여 확인 // 이미 참여한 사람인지 체크 하기??
 router.post("/join", async(req, res) => {
    
     // Request Data
@@ -197,14 +197,16 @@ router.post("/join", async(req, res) => {
 })
 
 // 그룹 랭킹 가져오기 
-router.get("/ranking", async(req, res) => {
+router.get("/rank", async(req, res) => {
 
     // Request Data
-    const groupNameValue = req.query.group_name
+    //const groupNameValue = req.query.group_name
+    const groupInviteCordValue = req.query.invite_code
     
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     
+    console.log(groupInviteCordValue,"ranking", accessTokenValue)
     // Response Data
     const result = {
         "success": false,
@@ -213,8 +215,8 @@ router.get("/ranking", async(req, res) => {
     }
 
     try{
-        if(groupNameValue === undefined || groupNameValue === null || groupNameValue === ""){
-            throw new Error("그룹 이름 값이 올바르지 않습니다.")
+        if(groupInviteCordValue === undefined || groupInviteCordValue === null || groupInviteCordValue === ""){
+            throw new Error("초대 코드가 올바르지 않습니다.")
         }else{
        
             if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
@@ -229,20 +231,39 @@ router.get("/ranking", async(req, res) => {
                     }else{
                     
                         const connection = await db.getConnection()
+                        //group 이름 가져오기 
+
+                        console.log("여기??")
+                        const selectNameSql = `
+                            SELECT group_name from carbon_group WHERE invite_code =?
+                        `
+                        const selectValues = [groupInviteCordValue]
+                        const [tempRows] = await connection.query(selectNameSql, selectValues)
+                        console.log(tempRows," 이름")
+
+                        const groupNameValue = tempRows[0].group_name
+
+                        console.log(groupNameValue,"이름")
+
                        //랭킹 api 호출 시 사용자 update total_carbon 한다음 select 하기 
-                       const updateSql = `
-                            UPDATE \`${groupNameValue}\`  SET total_carbon = (
-                                SELECT SUM(food_carbon)
-                                FROM carbon JOIN \`${groupNameValue}\` ON carbon.account_index = \`${groupNameValue}\`.account_index
-                                WHERE account_index = carbon.account_index
-                            )
+                       const updateSql = ` 
+                            UPDATE carbon AS t1
+                            JOIN (
+                            SELECT account_index, SUM(food_carbon) AS total_food_carbon
+                            FROM carbon
+                            GROUP BY account_index
+                            ) AS subquery
+                            ON t1.account_index = subquery.account_index
+                            SET t1.total_carbon = subquery.total_food_carbon
+
                        `
                        await connection.query(updateSql)
 
-
+                       console.log(" 출력됨?")
                         const sql = `
-                            SELECT user_name, total_carbon FROM \`${groupNameValue}\` JOIN account 
-                            ON \`${groupNameValue}\`.account_index = account.account_index ORDER BY total_carbon ASC
+                            SELECT user_name, carbon.total_carbon FROM \`${groupNameValue}\` JOIN account 
+                            ON \`${groupNameValue}\`.account_index = account.account_index  
+                            JOIN carbon ON \`${groupNameValue}\`.account_index = carbon.account_index ORDER BY total_carbon ASC
                         `
                         const [rows ] =await connection.query(sql)
 
@@ -250,6 +271,7 @@ router.get("/ranking", async(req, res) => {
                     
                         result.message="성공"
                         result.data = rows
+                        console.log(rows,"랭킹 데이터")
                         connection.release()
                         res.send(result)
                         
@@ -274,7 +296,8 @@ router.get("/ranking", async(req, res) => {
         
     }catch(e){
         result.message = e.message
-        console.log("GET /group/ranking API ERR : ", e.message)
+        console.log(e.message)
+        console.log("GET /group/rank API ERR : ", e.message)
     }   
 
 })
