@@ -1,18 +1,14 @@
 const router = require("express").Router()
-const jwt = require("jsonwebtoken")
 const db = require("../modules/mysql")
 const uuid = require('uuid');
 const shortid = require('shortid');
+const cron = require('node-cron');
 
-
-const nowTime = require("../modules/kst")
 const accessVerify = require("../modules/access_verify")
 const refreshVerify = require("../modules/refresh_verify")
 const newAccessToken = require("../modules/new_access_token")
 const updateRefreshToken = require("../modules/update_refresh_token")
-const updateFoodCarbon = require("../modules/update_food_carbon")
 
-const jwtSecretKey = process.env.JWT_SECRET_KEY
 
 //그룹 새성 api 
 router.post("/", async(req, res) => {
@@ -205,6 +201,7 @@ router.get("/ranking", async(req, res) => {
 
     // Request Data
     const groupNameValue = req.query.group_name
+    
     const refreshTokenValue = req.headers.refresh_token
     const accessTokenValue = req.headers.access_token
     
@@ -232,7 +229,17 @@ router.get("/ranking", async(req, res) => {
                     }else{
                     
                         const connection = await db.getConnection()
-                       
+                       //랭킹 api 호출 시 사용자 update total_carbon 한다음 select 하기 
+                       const updateSql = `
+                            UPDATE \`${groupNameValue}\`  SET total_carbon = (
+                                SELECT SUM(food_carbon)
+                                FROM carbon JOIN \`${groupNameValue}\` ON carbon.account_index = \`${groupNameValue}\`.account_index
+                                WHERE account_index = carbon.account_index
+                            )
+                       `
+                       await connection.query(updateSql)
+
+
                         const sql = `
                             SELECT user_name, total_carbon FROM \`${groupNameValue}\` JOIN account 
                             ON \`${groupNameValue}\`.account_index = account.account_index ORDER BY total_carbon ASC
@@ -271,5 +278,7 @@ router.get("/ranking", async(req, res) => {
     }   
 
 })
+
+//그룹 종료 ~ 삭제하기 
 
 module.exports = router

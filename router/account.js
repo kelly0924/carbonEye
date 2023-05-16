@@ -18,7 +18,7 @@ router.post("/login",async(req, res) => {
     const emailValue = req.body.email
     const passwordValue = req.body.pw
 
-    console.log(emailValue, passwordValue, req.body)
+    console.log(emailValue, passwordValue, req.body,"로그인 api")
     
     console.log(emailValue,passwordValue)
     // Response Data
