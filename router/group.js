@@ -156,14 +156,24 @@ router.post("/join", async(req, res) => {
                         const groupNameValue = rows[0].group_name
 
                         if(tempInviteCode === inviteCodeValue){
-                            const sql = `
-                                INSERT INTO \`${groupNameValue}\` (account_index) VALUES(?)
-                            `
-                            const values =[accountIndexValue]
-                            await connection.query(sql, values)
-                            result.success = true
-                            result.message="가입 성공."
 
+                            //이미 가입한 그룹에 또다시 가입 하지 않도록 하기!
+                            const checkSql = `SELECT account_index FROM \`${groupNameValue}\` account_index = ? `
+                            const checkValues = [accountIndexValue]
+                            const [ rows ] = await connection.query(checkSql, checkValues)
+
+                            if(rows.length === 0){
+                                const sql = `
+                                    INSERT INTO \`${groupNameValue}\` (account_index) VALUES(?)
+                                `
+                                const values =[accountIndexValue]
+                                await connection.query(sql, values)
+                                result.success = true
+                                result.message="가입 성공."
+                            }else {
+                                result.message="이미 가입한 그룹 입니다."
+                            }
+                            
                         }
                         
 
