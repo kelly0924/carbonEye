@@ -72,30 +72,32 @@ router.post("/", async(req, res) => {
                         `
                         await connection.query(groupSql)
 
-                      //group table에 insert 하기 
-                       const insertSql =`
-                            INSERT INTO carbon_group(group_name,manager_account,start_date, end_data,invite_code, is_food,is_traffic) VALUES(?, ?, ?, ?, ?, ?, ?) 
-                       `
-                       const values =[groupNameValue, accountIndexValue, startTimeValue, endTimeValue, inviteCode, is_foodValue, is_trafficValue]
-                       await connection.query(insertSql, values)
+                        //group table에 insert 하기 
+                        const insertSql =`
+                                INSERT INTO carbon_group(group_name,manager_account,start_date, end_data,invite_code, is_food,is_traffic) VALUES(?, ?, ?, ?, ?, ?, ?) 
+                        `
+                        const values =[groupNameValue, accountIndexValue, startTimeValue, endTimeValue, inviteCode, is_foodValue, is_trafficValue]
+                        await connection.query(insertSql, values)
 
-                       // 그룹을 생성한 사람도 그 그룹에 참여하게 하기 
+                        // 그룹을 생성한 사람도 그 그룹에 참여하게 하기 
+                    
                         const joinSql = `
                                 INSERT INTO \`${groupNameValue}\` (account_index) VALUES(?)
                             `
-                            const joinValues =[accountIndexValue]
-                            await connection.query(joinSql, joinSql)
+                        const joinValues =[accountIndexValue]
+                        console.log(joinValues)
+                        await connection.query(joinSql, joinValues)
 
                         // 그룹을 만든 사람을  account table invite에 넣어주기 
                         const insertJoinSql = `UPDATE account SET invite = ? WHERE account_index = ? `
                         const insertJoinValues = [String(inviteCode), accountIndexValue]
                         await connection.query(insertJoinSql, insertJoinValues)
 
-                       result.success = true
-                       result.invite_code = inviteCode
-                       result.message="group 생성."
+                        result.success = true
+                        result.invite_code = inviteCode
+                        result.message="group 생성."
 
-                        connection.release()
+                        await connection.release()
                         res.send(result)
                     }
                 

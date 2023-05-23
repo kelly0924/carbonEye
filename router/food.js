@@ -12,6 +12,81 @@ const updateFoodCarbon = require("../modules/update_food_carbon")
 
 const jwtSecretKey = process.env.JWT_SECRET_KEY
 
+//food 탄소량 넣기 
+router.post("/",async(req, res) => {
+
+
+    // Request Data
+    const temp =  req.body.carbon
+    const carbonValue = parseInt(temp)
+
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
+    
+    // Response Data
+    const result = {
+        "success": false,
+        "message": null
+    }
+
+    try{
+        if(carbonValue === undefined || carbonValue === null || carbonValue === ""){
+            throw new Error("carbon 값이 올바르지 않습니다.")
+        }else{
+       
+            if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
+
+                const accountIndexValue = accessVerify(accessTokenValue).payload
+
+                if(accessVerify(accessTokenValue).success === true){//treu일 경우-> access_token이 유효한 경우 
+                    
+                    if(refreshVerify(refreshTokenValue).message === "token expired"){
+                        const temp = await updateRefreshToken(accountIndexValue)
+                        res.send(temp)
+                    }else{
+                    
+                        const connection = await db.getConnection()
+                        const sql = `
+                            INSERT INTO carbon (account_index, food_carbon, date) VALUES(?, ?, ?) 
+                        `
+                        const values = [accountIndexValue, carbonValue, nowTime()]
+                        await connection.query(sql, values)
+
+                        result.success = true
+                        connection.release()
+                        res.send(result)
+                    }
+                
+                }else if(accessVerify(accessTokenValue).message === "token expired"){//access_token이 완료된 경우 
+                    //refresh_token이 유효한 경우 
+                    if(refreshVerify(refreshTokenValue)){//true 인 경우 -> refresh_token이 유효한 경우 새로운 access_token생성
+                        const accountIndexValue = refreshVerify(refreshTokenValue).payload
+                        const temp = await newAccessToken(accountIndexValue, refreshTokenValue)
+                        res.send(temp)
+
+                    }else{
+                        throw new Error("모든 토큰이 완료 되었습니다.")
+                    }
+
+                }else{
+                    throw new Error("토큰이 올바르지 않습니다.")
+                }
+            }else{
+                throw new Error("토큰이 올바르지 않습니다.")
+            }
+        }
+    }catch(e){
+        result.message = e.message
+        console.log("POST /food API ERR : ", e.message)
+    }
+
+    
+
+})
+
+
+
+//음식 넣은 것에 대한 탄소량 가져오기 api 
 router.get("/",async(req,res)=>{
     // Request Data
     const refreshTokenValue = req.headers.authorization
