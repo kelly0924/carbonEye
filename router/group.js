@@ -79,6 +79,18 @@ router.post("/", async(req, res) => {
                        const values =[groupNameValue, accountIndexValue, startTimeValue, endTimeValue, inviteCode, is_foodValue, is_trafficValue]
                        await connection.query(insertSql, values)
 
+                       // 그룹을 생성한 사람도 그 그룹에 참여하게 하기 
+                        const joinSql = `
+                                INSERT INTO \`${groupNameValue}\` (account_index) VALUES(?)
+                            `
+                            const joinValues =[accountIndexValue]
+                            await connection.query(joinSql, joinSql)
+
+                        // 그룹을 만든 사람을  account table invite에 넣어주기 
+                        const insertJoinSql = `UPDATE account SET invite = ? WHERE account_index = ? `
+                        const insertJoinValues = [String(inviteCode), accountIndexValue]
+                        await connection.query(insertJoinSql, insertJoinValues)
+
                        result.success = true
                        result.invite_code = inviteCode
                        result.message="group 생성."
@@ -118,7 +130,6 @@ router.post("/join", async(req, res) => {
    
     // Request Data
     const inviteCodeValue = req.body.invite_code    
-    console.log(inviteCodeValue , "그룹 참여 api")
 
     const refreshTokenValue = req.headers.authorization
     const accessTokenValue = req.headers.authorization
@@ -156,13 +167,15 @@ router.post("/join", async(req, res) => {
                         const tempInviteCode = rows[0].invite_code
                         const groupNameValue = rows[0].group_name
 
+                        console.log(tempInviteCode, groupNameValue, "여기 제대로 잘 나오나?")
+
                         if(tempInviteCode === inviteCodeValue){
 
                             //이미 가입한 그룹에 또다시 가입 하지 않도록 하기!
-                            const checkSql = `SELECT account_index FROM \`${groupNameValue}\` account_index = ? `
+                            const checkSql = `SELECT account_index FROM \`${groupNameValue}\` WHERE account_index = ? `
                             const checkValues = [accountIndexValue]
                             const [ rows ] = await connection.query(checkSql, checkValues)
-
+                            
                             if(rows.length === 0){
                                 const sql = `
                                     INSERT INTO \`${groupNameValue}\` (account_index) VALUES(?)
@@ -171,10 +184,10 @@ router.post("/join", async(req, res) => {
                                 await connection.query(sql, values)
 
                                 // 가입시 account table invite에 넣어 주기 
-                                const insertSql = `UPDATE account SET invite = ? WHERE account_index =? `
-                                const insertValues = [inviteCodeValue, accountIndexValue]
+                                const insertSql = `UPDATE account SET invite = ? WHERE account_index = ? `
+                                const insertValues = [String(inviteCodeValue), accountIndexValue]
                                 await connection.query(insertSql, insertValues)
-                                
+
                                 result.success = true
                                 result.message="가입 성공."
                             }else {
