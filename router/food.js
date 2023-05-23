@@ -14,8 +14,8 @@ const jwtSecretKey = process.env.JWT_SECRET_KEY
 
 router.get("/",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
     const menuValue = []// 메뉴들을 넣을 배열 
 
     if(req.query.menu === undefined || req.query.menu === null || req.query.menu === ""){
@@ -100,8 +100,8 @@ router.get("/",async(req,res)=>{
 
 router.get("/solution",async(req,res)=>{
     // Request Data
-    const refreshTokenValue = req.headers.refresh_token
-    const accessTokenValue = req.headers.access_token
+    const refreshTokenValue = req.headers.authorization
+    const accessTokenValue = req.headers.authorization
 
     //Respons Data
     

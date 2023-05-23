@@ -119,6 +119,7 @@ router.post("/join", async(req, res) => {
     // Request Data
     const inviteCodeValue = req.body.invite_code    
     console.log(inviteCodeValue , "그룹 참여 api")
+
     const refreshTokenValue = req.headers.authorization
     const accessTokenValue = req.headers.authorization
     
@@ -168,6 +169,12 @@ router.post("/join", async(req, res) => {
                                 `
                                 const values =[accountIndexValue]
                                 await connection.query(sql, values)
+
+                                // 가입시 account table invite에 넣어 주기 
+                                const insertSql = `UPDATE account SET invite = ? WHERE account_index =? `
+                                const insertValues = [inviteCodeValue, accountIndexValue]
+                                await connection.query(insertSql, insertValues)
+                                
                                 result.success = true
                                 result.message="가입 성공."
                             }else {
