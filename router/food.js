@@ -107,14 +107,11 @@ router.get("/",async(req,res)=>{
     const result = {
         "success": false,
         "message": null,
-        "access_token": null,
-        "refresh_token": null,
         "data": 0
     }
     
     try{
         
-    
         if(accessTokenValue !== undefined || refreshTokenValue !== undefined){ 
 
             const accountIndexValue = accessVerify(accessTokenValue).payload
@@ -183,8 +180,6 @@ router.get("/solution",async(req,res)=>{
     const result = {
         "success": false,
         "message": null,
-        "access_token": null,
-        "refresh_token": null,
         "data": 0
     }
     
@@ -198,13 +193,12 @@ router.get("/solution",async(req,res)=>{
                 
                 if(refreshVerify(refreshTokenValue).message === "token expired"){
                     const temp = await updateRefreshToken(accountIndexValue)
-                    console.log("여기동",temp)
                     res.send(temp)
                 }else{
                    
                     const connection = await db.getConnection()
                     const sql = `
-                        SELECT menu, carbon  FROM food ORDER BY carbon ASC
+                        SELECT * FROM food_solution
                     `
                     const [rows]  = await connection.query(sql)
                     result.success = true

@@ -8,6 +8,7 @@ app.use(cors({
     origin: "*"
 }))
 app.use(express.json())
+app.use(express.static('img'))
 
 const accountAPI = require("./router/account")
 app.use("/account", accountAPI)

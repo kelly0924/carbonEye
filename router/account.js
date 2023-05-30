@@ -326,11 +326,12 @@ router.get("/avg",async(req,res)=>{
                    
                     const connection = await db.getConnection()
                     const sql = `
-                     SELECT  DATE_FORMAT(date, '%Y-%m-%d') AS date, food_carbon, traffic_carbon FROM carbon  WHERE date BETWEEN DATE_SUB(NOW(), INTERVAL 5 DAY) AND NOW() AND account_index = ?
+                     SELECT  DATE_FORMAT(date, '%Y-%m-%d') AS date, food_carbon, traffic_carbon FROM carbon  WHERE date BETWEEN DATE_SUB(NOW(), INTERVAL 6 DAY) AND NOW() AND account_index = ?
                     `
                     const values = [accountIndexValue]
                     const [rows]  = await connection.query(sql, values)
                 
+                    console.log(rows,"??", rows.length)
                     let tempCarbon={
                         "one_day_ago": 0,
                         "two_day_ago": 0,
@@ -344,6 +345,7 @@ router.get("/avg",async(req,res)=>{
 
                         let diffDay = dateAgo(rows[index].date)
 
+                        
                         if(diffDay === 1){
                             tempCarbon.one_day_ago = rows[index].food_carbon + rows[index].traffic_carbon
                         }else if(diffDay === 2){
@@ -353,6 +355,7 @@ router.get("/avg",async(req,res)=>{
                         }else if(diffDay === 4){
                             tempCarbon.four_day_ago= rows[index].food_carbon + rows[index].traffic_carbon
                         }else if(diffDay === 5){
+                            console.log("5일전?",rows[index].food_carbon)
                             tempCarbon.five_day_ago = rows[index].food_carbon + rows[index].traffic_carbon
                         }else{
                             console.log(diffDay)

@@ -115,7 +115,7 @@ router.get("/solution",async(req,res)=>{
                    
                     const connection = await db.getConnection()
                     const sql = `
-                        SELECT solution  FROM traffic_solution
+                        SELECT * FROM traffic_solution
                     `
                     const [rows]  = await connection.query(sql)
                     result.success = true

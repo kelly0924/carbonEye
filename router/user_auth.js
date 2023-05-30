@@ -41,7 +41,6 @@ router.post("/",upload.single('img'), async(req, res) => {
                     
                     if(refreshVerify(refreshTokenValue).message === "token expired"){
                         const temp = await updateRefreshToken(accountIndexValue)
-                        console.log("여기동",temp)
                         res.send(temp)
                     }else{
                     
@@ -113,9 +112,10 @@ router.get("/",async(req,res)=>{
                    
                     const connection = await db.getConnection()
                     const sql = `
-                        SELECT user_name,img FROM user_auth JOIN account ON user_auth.account_index = account.account_index
+                        SELECT user_name,img FROM user_auth JOIN account ON user_auth.account_index = account.account_index AND user_auth.account_index = ?
                     `
-                    const [rows]  = await connection.query(sql)
+                    const values = [accountIndexValue]
+                    const [rows]  = await connection.query(sql, values)
                     result.success = true
                     result.data = rows
     
