@@ -171,16 +171,18 @@ router.get("/",async(req,res)=>{
 //food 솔류션 가져오기_ carbon 배출량이 적은 것 부터 나열해주기
 
 router.get("/solution",async(req,res)=>{
+
+    let randomNumber = Math.floor(Math.random() * (20 - 1 + 1))
+
     // Request Data
     const refreshTokenValue = req.headers.authorization
     const accessTokenValue = req.headers.authorization
 
     //Respons Data
-    
     const result = {
         "success": false,
         "message": null,
-        "data": 0
+        "data": null
     }
     
     try{
@@ -202,7 +204,7 @@ router.get("/solution",async(req,res)=>{
                     `
                     const [rows]  = await connection.query(sql)
                     result.success = true
-                    result.data = rows
+                    result.data = rows[randomNumber]
     
                     await connection.release()
                     res.send(result)

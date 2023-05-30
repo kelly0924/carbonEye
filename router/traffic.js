@@ -87,12 +87,13 @@ router.post("/",async(req, res) => {
 //traffic solution 가져오기 API
 
 router.get("/solution",async(req,res)=>{
+    
+    let randomNumber = Math.floor(Math.random() * (13 - 2 + 1))
     // Request Data
     const refreshTokenValue = req.headers.authorization
     const accessTokenValue = req.headers.authorization
 
     //Respons Data
-    
     const result = {
         "success": false,
         "message": null,
@@ -119,8 +120,8 @@ router.get("/solution",async(req,res)=>{
                     `
                     const [rows]  = await connection.query(sql)
                     result.success = true
-                    result.data = rows
-    
+                    result.data = rows[randomNumber]
+                    console.log(rows[randomNumber], randomNumber)
                     await connection.release()
                     res.send(result)
                 }
