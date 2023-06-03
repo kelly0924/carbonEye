@@ -64,9 +64,9 @@ router.post("/", async(req, res) => {
                         const groupSql = `
                             CREATE TABLE \`${groupNameValue}\` (
                                 groud_join_index INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-                                group_index INT REFERENCES carbon_group(group_index),
-                                account_index INT REFERENCES account(account_index)
-                                
+                                account_index INT REFERENCES account(account_index),
+                                start_date DATE,
+                                end_date DATE
                             );
                             
                         `
@@ -82,9 +82,9 @@ router.post("/", async(req, res) => {
                         // 그룹을 생성한 사람도 그 그룹에 참여하게 하기 
                     
                         const joinSql = `
-                                INSERT INTO \`${groupNameValue}\` (account_index) VALUES(?)
+                                INSERT INTO \`${groupNameValue}\` (account_index,start_date, end_date ) VALUES(?,?,?)
                             `
-                        const joinValues =[accountIndexValue]
+                        const joinValues =[accountIndexValue, startTimeValue, endTimeValue]
                         console.log(joinValues)
                         await connection.query(joinSql, joinValues)
 
@@ -264,15 +264,11 @@ router.get("/rank", async(req, res) => {
                     
                         const connection = await db.getConnection()
                         //group 이름 가져오기 
-
-                        console.log("여기??")
                         const selectNameSql = `
                             SELECT group_name from carbon_group WHERE invite_code =?
                         `
                         const selectValues = [groupInviteCordValue]
                         const [tempRows] = await connection.query(selectNameSql, selectValues)
-                        console.log(tempRows," 이름")
-
                         const groupNameValue = tempRows[0].group_name
 
                         console.log(groupNameValue,"이름")
@@ -291,16 +287,14 @@ router.get("/rank", async(req, res) => {
                        `
                        await connection.query(updateSql)
 
-                       console.log(" 출력됨?")
                         const sql = `
-                            SELECT user_name, carbon.total_carbon FROM \`${groupNameValue}\` JOIN account 
+                            SELECT DISTINCT user_name, carbon.total_carbon, start_date, end_date  FROM \`${groupNameValue}\` JOIN account 
                             ON \`${groupNameValue}\`.account_index = account.account_index  
                             JOIN carbon ON \`${groupNameValue}\`.account_index = carbon.account_index ORDER BY total_carbon ASC
                         `
                         const [rows ] =await connection.query(sql)
 
                         result.success = true
-                    
                         result.message="성공"
                         result.data = rows
                         console.log(rows,"랭킹 데이터")
