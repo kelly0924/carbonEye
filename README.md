@@ -1,47 +1,37 @@
-```
-┌───────────────────────────────────────────────┐
-                                       _       
-     __ _  ___   ___  _ __ _ __ ___   (_) ___  
-    / _` |/ _ \ / _ \| '__| '_ ` _ \  | |/ _ \ 
-   | (_| | (_) | (_) | |  | | | | | |_| | (_) |
-    \__, |\___/ \___/|_|  |_| |_| |_(_)_|\___/ 
-    |___/                                      
-			     🌩 𝘼𝙣𝙮𝙤𝙣𝙚 𝙘𝙖𝙣 𝙙𝙚𝙫𝙚𝙡𝙤𝙥!
-└───────────────────────────────────────────────┘
-```
 
-# goormIDE
-Welcome to goormIDE!
+# 졸업 프로젝트 - CarbonEye
 
-goormIDE is a powerful cloud IDE service to maximize productivity for developers and teams.  
-**DEVELOP WITH EXCELLENCE**  
+## 프로젝트 설명
+2050 탄소중립 시나리오와 2030 국가 온실가스 감축목표 상향안이 확정, 발표됨에 따라 본 프로젝트는 개개인의 탄소 소비량을 계산하고 그에 따른 탄소 절감 솔루션 제공, 탄소 소비량 랭킹 시스템을 활용해 보다 쉽고 재미있게 탄소 사용량에 대한 심각성을 인지시키고 더 나아가 절감할 수 있는 방법까지 제공할 수 있도록 제작하려고 합니다.
 
-`Happy coding! The goormIDE team`
+## 담당 역할: Back-end 구현
+
+## 프로젝트 특징
+#### 회원가입 & 로그인
+
+1. Node mailer 모듈을 이용한 이메일 인증
+2. 로그인시 access token 발급
+![](https://velog.velcdn.com/images/kelly2017/post/3d3d30ce-7254-44c2-8f1e-099c32181f55/image.png)
+
+#### 이미지 upload
+1. access token을 기반으로 사용자 인증 
+2. Node Multer를 이용한 이미지 업로드
+
+![](https://velog.velcdn.com/images/kelly2017/post/d34c479e-eff0-4734-868c-c485f4738b9e/image.png)
+
+#### 파이썬 웹서버 구축 
+Flask를 통한 파이썬 웹 구축과 이미지 업로드 및 이미지에 대한 결과값 리턴 API 작성.
 
 
-## 🔧 Tip & Guide
+## 개발환경 및 언어
+1. GroomIDE 컨테이너
+2. Node.js
+3. MySQL
+4. Python
+5. ubuntue 18.04
 
-* Command feature
-	* You can simply run your script using the shortcut icons on the top right.
-	* Check out `PROJECT > Common/Build/Run/Test/Find Command` in the top menu.
-	
-* Get URL and Port
-	* Click `PROJECT > URL/PORT` in top menu bar.
-	* You can get default URL/Port and add URL/Port in the top menu.
 
-* Useful shortcut
-	
-| Shortcuts name     | Command (Mac) | Command (Window) |
-| ------------------ | :-----------: | :--------------: |
-| Copy in Terminal   | ⌘ + C         | Ctrl + Shift + C |
-| Paste in Terminal  | ⌘ + V         | Ctrl + Shift + V |
-| Search File        | ⌥ + ⇧ + F     | Alt + Shift + F  |
-| Terminal Toggle    | ⌥ + ⇧ + B     | Alt + Shift + B  |
-| New Terminal       | ⌥ + ⇧ + T     | Alt + Shift + T  |
-| Code Formatting    | ⌥ + ⇧ + P     | Alt + Shift + P  |
-| Show All Shortcuts | ⌘ + H         | Ctrl + H         |
 
-## 💬 Support & Documentation
-
-Visit [https://ide.goorm.io](https://ide.goorm.io) to support and learn more about using goormIDE.  
-To watch some usage guides, visit [https://help.goorm.io/en/goormide](https://help.goorm.io/en/goormide)
+## 데이터 베이스 설계
+#### ERD
+![](https://velog.velcdn.com/images/kelly2017/post/222a368c-6a9b-463c-aa0b-1a8ee8798ae4/image.png)
