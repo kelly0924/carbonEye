@@ -5,12 +5,16 @@
 
 ## 담당 역할: Back-end 구현
 
-## 개발환경 및 언어
-1. GroomIDE 컨테이너
-2. Node.js
-3. MySQL
-4. Python
-5. ubuntue 18.04LTS
+## 개발환경 및 사용한 스킬
+1.	Mysql → npm mysql-server 패키지
+2.	ubuntu 18.00 → GroomID 에서 계정으로 구매 후 사용
+3.	express -> express를 사용한 웹서버 구축
+4.	node.js → npm 을 이용한 패키지 관리
+5.	JWT → jsonwebtoken 사용자 인증을 위한 인증 방법
+6.	node-multer →  node.js 에서 사용하는 이미지 업로드 모듈
+7.	서버를 background 실행 → pm2 node.js에서 백그라운드로 서버 돌리는 모듈
+
+
 
 ## 협업 틀
 1. 피그마
