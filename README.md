@@ -15,7 +15,7 @@
 4.	node.js → npm 을 이용한 패키지 관리
 5.	JWT → jsonwebtoken 사용자 인증을 위한 인증 방법
 6.	node-multer →  node.js 에서 사용하는 이미지 업로드 모듈
-7.	백그라운드 서바 실행 → pm2 node.js에서 백그라운드로 서버 돌리는 모듈
+7.	백그라운드 서버 실행 → pm2 node.js에서 백그라운드로 서버 돌리는 모듈
 
 
 
