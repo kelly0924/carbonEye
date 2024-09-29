@@ -8,23 +8,24 @@
 1. Back-end 구현
 2. 기획 및 기록
 
-## 개발환경 및 사용한 스킬
+## 개발환경 및 사용 스킬
 1.	Mysql → npm mysql-server 패키지
 2.	ubuntu 18.00 → GroomID 에서 계정으로 구매 후 사용
 3.	express -> express를 사용한 웹서버 구축
 4.	node.js → npm 을 이용한 패키지 관리
 5.	JWT → jsonwebtoken 사용자 인증을 위한 인증 방법
 6.	node-multer →  node.js 에서 사용하는 이미지 업로드 모듈
-7.	서버를 background 실행 → pm2 node.js에서 백그라운드로 서버 돌리는 모듈
+7.	백그라운드 서바 실행 → pm2 node.js에서 백그라운드로 서버 돌리는 모듈
 
 
 
-## 협업 틀
+## 협업 툴
 1. 피그마
 2. 노션
 3. git
 
-## 프로젝트 특징
+   
+## 기능
 #### 회원가입 & 로그인
 
 1. Node mailer 모듈을 이용한 이메일 인증
@@ -44,7 +45,7 @@
 
 1. Flask  웹 프레임워크를 이용한 웹서버 구축
 2. 이미지 업로드 API 작성
-3. Machine learning 으로 이미지 보내고 결과 값 가져오는 API 작성
+3. 자동화 된 탄소량 측정을 위해 이미지를 머신러닝 서버로 전송
 
 
 ## 데이터 베이스 설계
